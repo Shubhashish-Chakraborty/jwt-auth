@@ -113,5 +113,8 @@ app.get('/me', auth , (req , res) => {
     
 })
 
-app.get("/" , (req,res) => {res.json({msg: "Welcome to the Home page of the website!"})});
+app.get('/' , (req , res) => {
+    res.sendFile(__dirname + "/public/index.html")
+})
+// app.get("/" , (req,res) => {res.json({msg: "Welcome to the Home page of the website!"})});
 app.listen(PORT);
