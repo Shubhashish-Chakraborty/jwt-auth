@@ -8,6 +8,21 @@ const users = [];
 
 app.use(express.json());
 
+function auth(req , res , next) {
+    const token = req.headers.token;
+    const decoded_data = jwt.verify(token , JWT_SECRET);
+
+    if (decoded_data.username) {
+        req.username = decoded_data.username;
+        next();
+    }
+    else {
+        res.status(403).json({
+            message: "You are not logged in, Access Denied!"
+        })
+    }
+}
+
 // SIGNUP
 app.post('/signup' , (req , res) => {
     const username = req.body.username;
@@ -72,14 +87,12 @@ app.post('/signin' , (req , res) => {
 })
 
 // AUTHENTICATED ENDPOINT: /me
-app.get('/me' , (req , res) => {
-    const token = req.headers.token;
-    const decoded_data = jwt.verify(token , JWT_SECRET);
-    // const username = decoded_data.username;
+app.get('/me', auth , (req , res) => {
+    const username = req.username;
 
     let searchUser = null;
     for (let i = 0 ; i < users.length ; i++) {
-        if (users[i].username === (decoded_data.username)) {
+        if (users[i].username === username) {
             searchUser = users[i];
         }
         // else {
@@ -87,18 +100,12 @@ app.get('/me' , (req , res) => {
         // }
     }
 
-    if (!searchUser) { // USER NOT FOUND!
-        res.status(403).json({
-            msg: "Authentication Failed!!, ACCESS DENIED!"
-        })
-    }
-    else {
-        res.json({
-            username: searchUser.username,
-            password: searchUser.password,
-            msg: "AUTHENTICATION SUCCESS!"
-        })
-    }
+
+    res.json({
+        username: searchUser.username,
+        password: searchUser.password,
+        msg: "AUTHENTICATION SUCCESS!"
+    })
 
     console.log(req.route.path);
     console.log(users);
